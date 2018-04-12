@@ -1,16 +1,16 @@
-version: '2.1'
+version: '3'
 services:
   ### Lemonade DB ##
   lemonade_db:
     image: mysql
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0 --bind-address=0.0.0.0
+    command: mysqld --character-set-server=utf8
+      --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;'
+      --innodb-flush-log-at-trx-commit=0 --bind-address=0.0.0.0
     environment:
       - MYSQL_ROOT_PASSWORD=lemon
-    ports:
-      - 33061:3306
     volumes:
-      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-      - /srv/lemonade/mysql-stage:/var/lib/mysql
+      - ./extras/001_create_dbs.sql:/docker-entrypoint-initdb.d/001_create_dbs.sql
+      - /srv/lemonade/mysql:/var/lib/mysql
     healthcheck:
         test: ["CMD", "mysqladmin", "-u", "root", "-plemon", "status"]
         interval: 30s
@@ -136,3 +136,5 @@ services:
   ### Redis ###
   redis:
     image: "redis"
+networks:
+  lemonade:
