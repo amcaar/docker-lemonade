@@ -23,7 +23,7 @@ services:
     links:
       - lemonade_db:mysql
       - thorn:thorn
-    environment: 
+    environment:
       - HADOOP_CONF_DIR=/usr/local/juicer/conf
     volumes:
       - ./limonero-config.yaml:/usr/local/limonero/conf/limonero-config.yaml
@@ -38,7 +38,7 @@ services:
     image: eubrabigsea/juicer
     tty: true
     stdin_open: true
-    environment: 
+    environment:
       - HADOOP_CONF_DIR=/usr/local/juicer/conf
     links:
       - stand
