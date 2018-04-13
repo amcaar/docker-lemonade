@@ -10,10 +10,10 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=lemon
     volumes:
-      - ./extras/initdb.d:/docker-entrypoint-initdb.d
+      - /srv/docker-lemonade/extras/initdb.d:/docker-entrypoint-initdb.d
       - /srv/lemonade/mysql:/var/lib/mysql
     networks:
-      lemonade:
+      default:
         aliases: [mysql, lemonade_db]
     healthcheck:
       test: ["CMD", "mysqladmin", "-u", "root", "-plemon", "status"]
@@ -21,8 +21,8 @@ services:
       timeout: 10s
       retries: 5
     deploy:
-      #      placement:
-      #        constraints: [node.volume == 'mapped']
+#      placement:
+#        constraints: [node.volume == 'mapped']
       restart_policy:
         condition: on-failure
 
@@ -32,11 +32,11 @@ services:
     environment:
       - HADOOP_CONF_DIR=/usr/local/juicer/conf
     volumes:
-      - ./config/limonero-config.yaml:/usr/local/limonero/conf/limonero-config.yaml
-      - ./config/logging_config.ini:/usr/local/limonero/logging_config.ini
+      - /srv/docker-lemonade/config/limonero-config.yaml:/usr/local/limonero/conf/limonero-config.yaml
+      - /srv/docker-lemonade/config/logging_config.ini:/usr/local/limonero/logging_config.ini
       - /srv/lemonade/logs:/usr/local/limonero/logs/
     networks:
-      - lemonade
+      - default
     depends_on:
       - db
       - thorn
@@ -50,12 +50,12 @@ services:
     environment:
       - HADOOP_CONF_DIR=/usr/local/juicer/conf
     volumes:
-       - ./config/juicer-config.yaml:/usr/local/juicer/conf/juicer-config.yaml
-       - ./config/logging_config.ini:/usr/local/juicer/logging_config.ini
-       - ./config/hdfs-site.xml:/usr/local/juicer/conf/hdfs-site.xml
+       - /srv/docker-lemonade/config/juicer-config.yaml:/usr/local/juicer/conf/juicer-config.yaml
+       - /srv/docker-lemonade/config/logging_config.ini:/usr/local/juicer/logging_config.ini
+       - /srv/docker-lemonade/config/hdfs-site.xml:/usr/local/juicer/conf/hdfs-site.xml
        - /srv/lemonade/logs:/usr/local/juicer/logs/
     networks:
-      - lemonade
+      - default
     depends_on:
       - stand
       - limonero
@@ -69,11 +69,11 @@ services:
   stand:
     image: eubrabigsea/stand
     volumes:
-      - ./config/stand-config.yaml:/usr/local/stand/conf/stand-config.yaml
-      - ./config/logging_config.ini:/usr/local/stand/logging_config.ini
+      - /srv/docker-lemonade/config/stand-config.yaml:/usr/local/stand/conf/stand-config.yaml
+      - /srv/docker-lemonade/config/logging_config.ini:/usr/local/stand/logging_config.ini
       - /srv/lemonade/logs:/usr/local/stand/logs/
     networks:
-      - lemonade
+      - default
     depends_on:
       - db
       - thorn
@@ -85,11 +85,11 @@ services:
   caipirinha:
     image: eubrabigsea/caipirinha
     volumes:
-      - ./config/caipirinha-config.yaml:/usr/local/caipirinha/conf/caipirinha-config.yaml
-      - ./config/logging_config.ini:/usr/local/caipirinha/logging_config.ini
+      - /srv/docker-lemonade/config/caipirinha-config.yaml:/usr/local/caipirinha/conf/caipirinha-config.yaml
+      - /srv/docker-lemonade/config/logging_config.ini:/usr/local/caipirinha/logging_config.ini
       - /srv/lemonade/logs:/usr/local/caipirinha/logs/
     networks:
-      - lemonade
+      - default
     depends_on:
       - db
       - thorn
@@ -101,9 +101,11 @@ services:
   tahiti:
     image: eubrabigsea/tahiti
     volumes:
-      - ./config/tahiti-config.yaml:/usr/local/tahiti/conf/tahiti-config.yaml
-      - ./config/logging_config.ini:/usr/local/tahiti/logging_config.ini
+      - /srv/docker-lemonade/config/tahiti-config.yaml:/usr/local/tahiti/conf/tahiti-config.yaml
+      - /srv/docker-lemonade/config/logging_config.ini:/usr/local/tahiti/logging_config.ini
       - /srv/lemonade/logs:/usr/local/tahiti/logs/
+    networks:
+      - default
     depends_on:
       - db
       - thorn
@@ -113,15 +115,15 @@ services:
 
   ### Thorn ###
   thorn:
-     image: eubrabigsea/thorn
-     environment:
-        - RAILS_CORS_ORIGINS=*
-     volumes:
-        - ./config/database.yml:/usr/src/app/config/database.yml
+    image: eubrabigsea/thorn
+    environment:
+      - RAILS_CORS_ORIGINS=*
+    volumes:
+      - /srv/docker-lemonade/config/database.yml:/usr/src/app/config/database.yml
     networks:
-      - lemonade
-     depends_on:
-       - db
+      - default
+    depends_on:
+      - db
     deploy:
       restart_policy:
         condition: any
@@ -133,15 +135,15 @@ services:
     ports:
       - '80:8080'
     volumes:
-      - ./config/env.json:/usr/local/citron/dist/env.json
-      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - lemonade
+      - /srv/docker-lemonade/config/env.json:/usr/local/citron/dist/env.json
+      - /srv/docker-lemonade/config/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - thorn
       - limonero
       - tahiti
       - stand
+    networks:
+      - default
     deploy:
       restart_policy:
         condition: any
@@ -149,8 +151,8 @@ services:
   ### Redis ###
   redis:
     image: redis
-    networks:
-      - lemonade
 
 networks:
-  lemonade:
+  default:
+volumes:
+  dbdata:
